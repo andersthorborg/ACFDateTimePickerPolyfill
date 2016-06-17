@@ -9,7 +9,7 @@ This polyfill serves to temporarily resolve these conflicts by making the now na
 The plugin does the following:
 * It automatically deactivates the date-time-picker add-on if ACF Pro version 5.3.9 or greater is detected
 * It changes the way date time fields are saved to immitate the add-on behavior, while not breaking the native date time picker.
-* It overrides "Display format" and "Return format" with the format previously specified with the add-on. (This essentially means that you cannot change date formats as the option is no longer available with the native field)
+* It overrides "Display format" and "Return format" with the format previously specified with the add-on. (This essentially means that you cannot change date formats as the option is no longer available with the native field. However, your site should be behaving just as it did before the update)
 
 Installation instructions
 -------------------------
