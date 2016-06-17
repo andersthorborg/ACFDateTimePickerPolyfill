@@ -187,6 +187,10 @@ function muplugins_loaded() {
 add_action( 'muplugins_loaded', __NAMESPACE__ . '\\muplugins_loaded');
 
 function has_native_date_time_picker () {
-  $acf = get_plugin_data( WP_PLUGIN_DIR . '/advanced-custom-fields-pro/acf.php' );
-  return $acf['Version'] >= '5.3.9';
+  if ( is_plugin_active( 'advanced-custom-fields-pro/acf.php' ) ) {
+    $acf = get_plugin_data( WP_PLUGIN_DIR . '/advanced-custom-fields-pro/acf.php' );
+    return $acf['Version'] >= '5.3.9';
+  }
+  return false;
+
 }
