@@ -13,10 +13,12 @@ Author URI: http://gejststudio.com
 class DateTimePickerPolyfill {
 
   public function __construct() {
-    add_filter('acf/load_value/type=date_time_picker', [$this, 'load_value'], 10, 3);
+    // Unhook acf format filter
+    remove_all_filters( 'acf/format_value/type=date_time_picker', 10 );
+    add_filter('acf/load_value/type=date_time_picker', [$this, 'load_value'], 100, 3);
     add_filter('acf/format_value/type=date_time_picker', [$this, 'format_value'], 10, 3);
     add_filter('acf/update_value/type=date_time_picker', [$this, 'update_value'], 10, 3);
-    $this->defaults = $this->add_on_get_defaults();
+    add_filter('acf/load_field/type=date_time_picker', [$this, 'load_field']);
   }
 
 
@@ -24,8 +26,16 @@ class DateTimePickerPolyfill {
   =            Filter functions            =
   ========================================*/
 
+  public function load_field( $field ) {
+    if ( isset( $field['date_format'] ) && isset( $field['date_format'] ) ) {
+      $field['display_format'] = $this->js_to_php_dateformat( $field['date_format'] ) . ' ' . $this->js_to_php_timeformat( $field['time_format'] );
+      $field['return_format'] = $this->js_to_php_dateformat( $field['date_format'] ) . ' ' . $this->js_to_php_timeformat( $field['time_format'] );
+    }
+    return $field;
+  }
 
-  public function update_value( $value, $post_id, $field  ) {
+
+  public function update_value( $value, $post_id, $field ) {
     switch ( $this->get_field_status( $field ) ) {
       case 'add-on':
       case 'updated':
@@ -39,16 +49,22 @@ class DateTimePickerPolyfill {
     switch ( $this->get_field_status( $field ) ) {
       case 'add-on':
       case 'updated':
-        return date( 'Y-m-d H:i:s', $value );
+        if ( $field['save_as_timestamp'] == 'true' && $this->is_valid_timestamp( $value ) ) {
+          return date( 'Y-m-d H:i:s', $value );
+        }
+        else {
+          $datetime = DateTime::createFromFormat( $this->js_to_php_dateformat( $field['date_format']) . ' ' . $this->js_to_php_timeformat( $field['time_format']), $value);
+          return date( 'Y-m-d H:i:s', $datetime->getTimestamp() );
+        }
     }
     return $value;
   }
 
   public function format_value( $value, $post_id, $field  ) {
-   switch ( $this->get_field_status( $field ) ) {
+    switch ( $this->get_field_status( $field ) ) {
       case 'add-on':
       case 'updated':
-        return $this->add_on_format_value( strtotime( $value ), $field );
+        return $this->add_on_format_value( $this->add_on_load_value( strtotime($value), $field ), $field );
     }
     return $value;
   }
@@ -78,7 +94,7 @@ class DateTimePickerPolyfill {
 
 
   private function add_on_load_value( $value, $field ) {
-    $field = array_merge($this->defaults, $field);
+    $field = array_merge($this->add_on_get_defaults(), $field);
     if ( $value != '' && $field['save_as_timestamp'] == 'true' && $field['get_as_timestamp'] != 'true' && $this->is_valid_timestamp( $value ) ) {
       if ( $field['show_date'] == 'true') {
          $value = date_i18n(sprintf("%s %s",$this->js_to_php_dateformat($field['date_format']),$this->js_to_php_timeformat($field['time_format'])), $value);
@@ -90,7 +106,7 @@ class DateTimePickerPolyfill {
   }
 
   private function add_on_update_value( $value, $field ) {
-    $field = array_merge( $this->defaults, $field );
+    $field = array_merge($this->add_on_get_defaults(), $field);
     if ($value != '' && $field['save_as_timestamp'] == 'true') {
         if (preg_match('/^dd?\//',$field['date_format'] )) { //if start with dd/ or d/ (not supported by strtotime())
             $value = str_replace('/', '-', $value);
@@ -100,8 +116,8 @@ class DateTimePickerPolyfill {
     return $value;
   }
 
-  private function add_on_format_value($value, $post_id, $field) {
-    $field = array_merge($this->defaults, $field);
+  private function add_on_format_value($value, $field) {
+    $field = array_merge($this->add_on_get_defaults(), $field);
     if ( $value != '' && $field['save_as_timestamp'] == 'true' && $field['get_as_timestamp'] != 'true' && $this->is_valid_timestamp( $value ) ) {
       if ( $field['show_date'] == 'true') {
          $value = date_i18n( sprintf( "%s %s", $this->js_to_php_dateformat( $field['date_format'] ), $this->js_to_php_timeformat( $field['time_format'] ) ), $value );
@@ -167,7 +183,7 @@ function init() {
   }
 }
 
-add_action( 'init', __NAMESPACE__ . '\\init' );
+add_action( 'acf/init', __NAMESPACE__ . '\\init' );
 
 
 /*==========================================
