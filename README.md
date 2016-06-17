@@ -8,6 +8,12 @@ This polyfill serves to temporarily resolve these conflicts by making the now na
 
 The plugin automatically deactivates the date-time-picker add-on if ACF Pro version 5.3.9 or greater is detected. It also changes the way date time fields are saved to immitate the add-on behavior, while still not breaking the native date time picker.
 
+Installation instructions
+-------------------------
+To enable the automatic disabling of the date time picker add-on this plugin must be installed as a MU-plugin.
+
+Copy the plugin file to wp-content/mu-plugins
+
 Beware that the date time picker addon supports only displaying a time picker which is not an option in the native date time picker. This issue is not addressed in this plugin
 
 The plugin is created based on our own issues with having live sites using the add-on so use at your own risk. :-)
