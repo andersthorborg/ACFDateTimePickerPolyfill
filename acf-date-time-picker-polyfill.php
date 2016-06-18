@@ -36,20 +36,20 @@ class DateTimePickerPolyfill {
 
 
   public function update_value( $value, $post_id, $field ) {
-    if( $this->id_add_on( $field )) {
+    if( $this->is_add_on( $field )) {
       return $this->add_on_update_value( $value, $field );
     }
   }
 
   public function load_value( $value, $post_id, $field  ) {
-    if( $this->id_add_on( $field )) {
+    if( $this->is_add_on( $field )) {
         return $this->add_on_load_value($value, $field);
     }
     return $value;
   }
 
   public function format_value( $value, $post_id, $field  ) {
-    if( $this->id_add_on( $field )) {
+    if( $this->is_add_on( $field )) {
         return $this->add_on_format_value( $value, $field );
     }
     return $value;
