@@ -36,35 +36,21 @@ class DateTimePickerPolyfill {
 
 
   public function update_value( $value, $post_id, $field ) {
-    switch ( $this->get_field_status( $field ) ) {
-      case 'add-on':
-      case 'updated':
-        return $this->add_on_update_value( $value, $field );
-
+    if( $this->id_add_on( $field )) {
+      return $this->add_on_update_value( $value, $field );
     }
-    return $value;
   }
 
   public function load_value( $value, $post_id, $field  ) {
-    switch ( $this->get_field_status( $field ) ) {
-      case 'add-on':
-      case 'updated':
-        if ( $field['save_as_timestamp'] == 'true' && $this->is_valid_timestamp( $value ) ) {
-          return date( 'Y-m-d H:i:s', $value );
-        }
-        else {
-          $datetime = DateTime::createFromFormat( $this->js_to_php_dateformat( $field['date_format']) . ' ' . $this->js_to_php_timeformat( $field['time_format']), $value);
-          return date( 'Y-m-d H:i:s', $datetime->getTimestamp() );
-        }
+    if( $this->id_add_on( $field )) {
+        return $this->add_on_load_value($value, $field);
     }
     return $value;
   }
 
   public function format_value( $value, $post_id, $field  ) {
-    switch ( $this->get_field_status( $field ) ) {
-      case 'add-on':
-      case 'updated':
-        return $this->add_on_format_value( $this->add_on_load_value( strtotime($value), $field ), $field );
+    if( $this->id_add_on( $field )) {
+        return $this->add_on_format_value( $value, $field );
     }
     return $value;
   }
@@ -75,16 +61,8 @@ class DateTimePickerPolyfill {
   ========================================*/
 
 
-  private function get_field_status( $field ) {
-    if ( ! isset( $field['date_format'] ) && isset( $field['display_format'] ) ) {
-      return 'native';
-    }
-    if ( isset( $field['date_format'] ) && ! isset( $field['display_format'] ) ) {
-      return 'add-on';
-    }
-    if ( isset( $field['date_format'] ) && isset( $field['display_format'] ) ) {
-      return 'updated';
-    }
+  private function is_add_on( $field ) {
+    return  isset( $field['date_format'] );
   }
 
 
